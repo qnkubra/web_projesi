@@ -1,4 +1,0 @@
-<?php
-$name = "Secil";
-echo "Merhaba " . $name;
-?>

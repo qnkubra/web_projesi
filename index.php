@@ -29,6 +29,7 @@ if($row = mysqli_fetch_assoc($sorgu)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LibReserve - Ana Sayfa</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='15' y='20' width='12' height='60' fill='%23b89c88' rx='2'/><rect x='35' y='20' width='12' height='60' fill='%23b89c88' rx='2'/><rect x='55' y='20' width='12' height='60' fill='%23b89c88' rx='2'/><polygon points='75,20 87,20 97,80 85,80' fill='%23b89c88'/></svg>">
     <style>
         body { margin: 0; background-color: #0d0d12; color: #ffffff; font-family: 'Segoe UI', sans-serif; scroll-behavior: smooth; }
         
@@ -90,7 +91,7 @@ if($row = mysqli_fetch_assoc($sorgu)) {
 
     <section class="hero">
         <h1>Kütüphanede<br>Yerinizi <span>Şimdiden Ayırın</span></h1>
-        <p>Vize döneminde boş masa arayan son kişi sen olma.</p>
+        <p>Sınav döneminde boş masa arayan son kişi sen olma.</p>
         <div class="hero-btns">
             <a href="salonlar.php" class="btn-primary">Hemen Başla →</a>
             <a href="#nasil-yapilir" class="btn-secondary">Nasıl Rezervasyon Yaparım?</a>

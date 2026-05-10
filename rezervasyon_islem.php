@@ -14,40 +14,57 @@ $tarih = trim($_POST['tarih']);
 $baslangic = trim($_POST['baslangic']);
 $bitis = trim($_POST['bitis']);
 
-// --- KRİTİK DÜZELTME: ÇAKIŞMA KONTROLÜNDE İPTAL EDİLENLERİ DEVRE DIŞI BIRAK ---
-$kontrol_sorgu = "SELECT id FROM rezervasyonlar WHERE kullanici_id = ? AND tarih = ? AND iptal_edildi = 0 AND (
-    (baslangic_saati <= ? AND bitis_saati > ?) OR 
-    (baslangic_saati < ? AND bitis_saati >= ?) OR
-    (? <= baslangic_saati AND ? >= bitis_saati)
-)";
+// --- 1. GEÇMİŞ SAAT KONTROLÜ ---
+$simdi_tarih = date('Y-m-d');
+$simdi_saat = date('H:i:s');
+
+if ($tarih == $simdi_tarih && $baslangic < $simdi_saat) {
+    echo "<script>alert('HATA: Geçmiş saatlere rezervasyon yapamazsınız. Lütfen güncel bir saat seçin.'); window.location.href='salonlar.php';</script>";
+    exit;
+}
+
+// --- 2. YENİ EKLENEN KONTROL: AYNI KULLANICININ ÇAKIŞAN RANDEVUSU VAR MI? ---
+// (Kişi aynı anda iki farklı yerde olamaz)
+$kullanici_kontrol_sorgu = "SELECT id FROM rezervasyonlar 
+                            WHERE kullanici_id = ? AND tarih = ? AND iptal_edildi = 0 
+                            AND (? < bitis_saati AND ? > baslangic_saati)";
+
+if ($stmt_kullanici = mysqli_prepare($db, $kullanici_kontrol_sorgu)) {
+    mysqli_stmt_bind_param($stmt_kullanici, "isss", $kullanici_id, $tarih, $baslangic, $bitis);
+    mysqli_stmt_execute($stmt_kullanici);
+    mysqli_stmt_store_result($stmt_kullanici);
+
+    if (mysqli_stmt_num_rows($stmt_kullanici) > 0) {
+        echo "<script>alert('HATA: Bu saat aralığında zaten başka bir masada aktif rezervasyonunuz bulunuyor! Aynı anda iki yerde olamazsınız.'); window.location.href='salonlar.php';</script>";
+        exit;
+    }
+    mysqli_stmt_close($stmt_kullanici);
+}
+
+// --- 3. MASA ÇAKIŞMA ENGELLEYİCİ (Önceden Yaptığımız) ---
+// (Aynı masayı aynı anda iki kişi alamaz)
+$kontrol_sorgu = "SELECT id FROM rezervasyonlar 
+                  WHERE masa_id = ? AND tarih = ? AND iptal_edildi = 0 
+                  AND (? < bitis_saati AND ? > baslangic_saati)";
 
 if ($stmt_kontrol = mysqli_prepare($db, $kontrol_sorgu)) {
-    // iptal_edildi = 0 olanları kontrol ederek, iptal edilen saatlerin boşa çıkmasını sağladık
-    mysqli_stmt_bind_param($stmt_kontrol, "isssssss", $kullanici_id, $tarih, $baslangic, $baslangic, $bitis, $bitis, $baslangic, $bitis);
+    mysqli_stmt_bind_param($stmt_kontrol, "isss", $masa_id, $tarih, $baslangic, $bitis);
     mysqli_stmt_execute($stmt_kontrol);
     mysqli_stmt_store_result($stmt_kontrol);
 
     if (mysqli_stmt_num_rows($stmt_kontrol) > 0) {
-        echo "<script>alert('HATA: Bu saat aralığında zaten AKTİF bir rezervasyonunuz bulunuyor!'); window.location.href='salonlar.php';</script>";
+        echo "<script>alert('HATA: Bu masa seçtiğiniz saatler arasında başka birine aittir!'); window.location.href='salonlar.php';</script>";
         exit;
     }
     mysqli_stmt_close($stmt_kontrol);
 }
 
-// 2. AŞAMA: REZERVASYONU KAYDET
+// --- 4. AŞAMA: HER ŞEY TEMİZSE REZERVASYONU KAYDET ---
 $rez_sorgu = "INSERT INTO rezervasyonlar (kullanici_id, masa_id, tarih, baslangic_saati, bitis_saati, onaylandi, iptal_edildi) VALUES (?, ?, ?, ?, ?, 0, 0)";
 
 if ($stmt = mysqli_prepare($db, $rez_sorgu)) {
     mysqli_stmt_bind_param($stmt, "iisss", $kullanici_id, $masa_id, $tarih, $baslangic, $bitis);
-    
     if (mysqli_stmt_execute($stmt)) {
-        // Masayı dolu yap
-        $masa_guncelle = "UPDATE masalar SET durum = 'dolu' WHERE id = ?";
-        if ($guncelle_stmt = mysqli_prepare($db, $masa_guncelle)) {
-            mysqli_stmt_bind_param($guncelle_stmt, "i", $masa_id);
-            mysqli_stmt_execute($guncelle_stmt);
-            mysqli_stmt_close($guncelle_stmt);
-        }
         header("location: rezervasyonlarim.php?durum=basarili");
         exit;
     }

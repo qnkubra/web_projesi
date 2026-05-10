@@ -14,13 +14,14 @@ $simdi_tarih = date('Y-m-d');
 $simdi_saat = date('H:i:s');
 $on_bes_dk_once = date('H:i:s', strtotime('-15 minutes'));
 
-// 15 dk onaylanmayanları SİLME, İPTAL OLARAK İŞARETLE
+// 15 dk onaylanmayanları SİLME, İPTAL OLARAK İŞARETLE (ARTIK "2" OLARAK İŞARETLİYORUZ)
 $gecikme_sorgu = "SELECT id, masa_id FROM rezervasyonlar WHERE tarih = '$simdi_tarih' AND onaylandi = 0 AND iptal_edildi = 0 AND baslangic_saati < '$on_bes_dk_once'";
 $gecikme_sonuc = mysqli_query($db, $gecikme_sorgu);
 while ($r = mysqli_fetch_assoc($gecikme_sonuc)) {
     $rid = $r['id']; $mid = $r['masa_id'];
     mysqli_query($db, "UPDATE masalar SET durum = 'bos' WHERE id = $mid");
-    mysqli_query($db, "UPDATE rezervasyonlar SET iptal_edildi = 1 WHERE id = $rid");
+    // DİKKAT: Sistem iptal ederse 2 yazdırıyoruz!
+    mysqli_query($db, "UPDATE rezervasyonlar SET iptal_edildi = 2 WHERE id = $rid");
 }
 
 // Süresi bitenleri yeşile çevir

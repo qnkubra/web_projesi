@@ -12,11 +12,10 @@ $kullanici_id = $_SESSION["kullanici_id"];
 $bugun = date('Y-m-d');
 $suan_saat = date('H:i:s');
 
-// Tüm rezervasyonları çekiyoruz
 $sorgu = "SELECT r.*, m.masa_kodu, m.salon_adi FROM rezervasyonlar r 
           JOIN masalar m ON r.masa_id = m.id 
           WHERE r.kullanici_id = ? 
-          ORDER BY r.tarih DESC, r.baslangic_saati DESC";
+          ORDER BY r.id DESC";
 
 $stmt = mysqli_prepare($db, $sorgu);
 mysqli_stmt_bind_param($stmt, "i", $kullanici_id);
@@ -28,12 +27,10 @@ $gecmis_rez = [];
 $iptal_rez = [];
 
 while ($row = mysqli_fetch_assoc($sonuc)) {
-    // İptal sütunu yoksa hata vermemesi için varsayılan 0 atıyoruz
     $is_iptal = isset($row['iptal_edildi']) ? $row['iptal_edildi'] : 0;
-    
     $bitis_zamani = strtotime($row['tarih'] . ' ' . $row['bitis_saati']);
     
-    if ($is_iptal == 1) {
+    if ($is_iptal > 0) {
         $iptal_rez[] = $row;
     } elseif ($bitis_zamani > time()) {
         $aktif_rez[] = $row;
@@ -49,42 +46,34 @@ while ($row = mysqli_fetch_assoc($sonuc)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LibReserve - Rezervasyonlarım</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='15' y='20' width='12' height='60' fill='%23b89c88' rx='2'/><rect x='35' y='20' width='12' height='60' fill='%23b89c88' rx='2'/><rect x='55' y='20' width='12' height='60' fill='%23b89c88' rx='2'/><polygon points='75,20 87,20 97,80 85,80' fill='%23b89c88'/></svg>">
     <style>
         body { margin: 0; background-color: #0d0d12; color: #ffffff; font-family: 'Segoe UI', sans-serif; }
-        
-        /* NAVBAR */
         .navbar { background-color: #1a1a24; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d2d3a; position: sticky; top: 0; z-index: 100; }
         .logo { font-size: 22px; font-weight: bold; }
         .logo span { color: #58493e; }
         .nav-links a { color: #a0a0b0; text-decoration: none; margin: 0 15px; font-size: 14px; font-weight: bold; transition: 0.3s; }
         .nav-links a.active, .nav-links a:hover { color: #ffffff; }
 
-        /* CONTAINER */
         .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
         h1 { text-align: center; color: #b89c88; margin-bottom: 50px; font-size: 32px; }
-        
         .section-title { border-left: 4px solid #58493e; padding-left: 15px; margin: 40px 0 20px; font-size: 20px; font-weight: bold; }
         
-        /* KART TASARIMI */
         .rez-card { background-color: #1a1a24; border: 1px solid #2d2d3a; border-radius: 12px; padding: 25px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
         .rez-card:hover { border-color: #58493e; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        
         .rez-info h3 { margin: 0 0 8px 0; font-size: 20px; }
         .rez-info p { margin: 0; color: #a0a0b0; font-size: 14px; line-height: 1.6; }
         
         .rez-actions { display: flex; flex-direction: column; gap: 10px; min-width: 150px; }
-        
         .btn-here { background-color: #58493e; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; text-align: center; }
         .btn-here:hover:not(:disabled) { background-color: #2ed573; color: #0d0d12; }
         .btn-here:disabled { background-color: #2d2d3a; color: #666; cursor: not-allowed; border: 1px solid #3d3d4a; }
-        
         .btn-cancel { background-color: transparent; color: #ff4d4d; border: 1px solid #ff4d4d; padding: 10px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 13px; font-weight: bold; text-align: center; transition: 0.3s; }
         .btn-cancel:hover { background-color: #ff4d4d; color: white; }
         
         .status-tag { font-weight: bold; font-size: 14px; text-align: center; padding: 10px; border-radius: 8px; }
         .onayli { color: #2ed573; background: rgba(46, 213, 115, 0.1); }
         .beklemede { color: #ffa502; font-size: 12px; margin-bottom: 2px; text-align: center; }
-        
         .empty-msg { color: #555; font-style: italic; margin-left: 20px; }
     </style>
 </head>
@@ -96,7 +85,13 @@ while ($row = mysqli_fetch_assoc($sonuc)) {
             <a href="index.php">Ana Sayfa</a>
             <a href="salonlar.php">Salonlar</a>
             <a href="rezervasyonlarim.php" class="active">Rezervasyonlarım</a>
-            <a href="cikis.php" style="color:#ff4d4d;" onclick="return confirm('Çıkış yapmak istediğinizden emin misiniz?');">Çıkış Yap</a>
+            <?php if(isset($_SESSION["rol"]) && $_SESSION["rol"] == 'admin'): ?>
+                <a href="admin_panel.php" style="color: #ff4d4d !important; border: 1px solid #ff4d4d; padding: 5px 12px; border-radius: 6px;">Yönetim Paneli</a>
+            <?php endif; ?>
+        </div>
+        <div class="user-menu">
+            <span style="color:#a0a0b0; font-size:14px; margin-right: 15px;">Merhaba, <?php echo htmlspecialchars($_SESSION["ad_soyad"]); ?></span>
+            <a href="cikis.php" style="color:#ff4d4d; text-decoration:none; font-weight:bold; border: 1px solid #ff4d4d; padding: 5px 10px; border-radius: 6px;" onclick="return confirm('Çıkış yapmak istediğinizden emin misiniz?');">Çıkış Yap</a>
         </div>
     </nav>
 
@@ -128,7 +123,6 @@ while ($row = mysqli_fetch_assoc($sonuc)) {
                     <?php else: ?>
                         <div class="status-tag onayli">✓ Onaylandı</div>
                     <?php endif; ?>
-                    
                     <a href="rezervasyon_iptal.php?id=<?php echo $rez['id']; ?>" class="btn-cancel" onclick="return confirm('Bu rezervasyonu iptal etmek istediğinizden emin misiniz?');">İptal Et</a>
                 </div>
             </div>
@@ -160,7 +154,17 @@ while ($row = mysqli_fetch_assoc($sonuc)) {
                     <h3><?php echo htmlspecialchars($rez['salon_adi']); ?> - Masa <?php echo htmlspecialchars($rez['masa_kodu']); ?></h3>
                     <p><?php echo date('d.m.Y', strtotime($rez['tarih'])); ?> | <?php echo substr($rez['baslangic_saati'], 0, 5); ?> - <?php echo substr($rez['bitis_saati'], 0, 5); ?></p>
                 </div>
-                <div style="color: #ff4d4d; font-weight: bold;">İptal Edildi</div>
+                <div style="color: #ff4d4d; font-weight: bold;">
+                    <?php 
+                        if ($rez['iptal_edildi'] == 2) {
+                            echo 'Zaman Aşımından Otomatik İptal';
+                        } elseif ($rez['iptal_edildi'] == 3) {
+                            echo '<span style="color: #9b59b6;">Admin İptali</span>';
+                        } else {
+                            echo 'İptal Edildi';
+                        }
+                    ?>
+                </div>
             </div>
         <?php endforeach; ?>
     </div>

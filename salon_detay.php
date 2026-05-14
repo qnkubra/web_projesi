@@ -195,9 +195,8 @@ $saatler = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:0
         .btn-reserve:hover:not(:disabled) { background-color: #b89c88; color: #0d0d12; }
         .btn-reserve:disabled { background-color: #2d2d3a; color: #a0a0b0; cursor: not-allowed; }
 
-        /* GÖRSEL SAAT KUTUCUKLARI TASARIMI (HOVER VE TIKLAMA İPTAL EDİLDİ) */
         .visual-time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; margin-bottom: 25px; }
-        .time-box { background-color: #0d0d12; border: 1px solid #2d2d3a; padding: 12px 5px; text-align: center; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: default; } /* cursor: default yapıldı */
+        .time-box { background-color: #0d0d12; border: 1px solid #2d2d3a; padding: 12px 5px; text-align: center; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: default; } 
         .time-box.free { border-color: #10ac84; color: #10ac84; background-color: rgba(16, 172, 132, 0.05); }
         .time-box.busy { border-color: #ee5253; color: #ee5253; background-color: rgba(238, 82, 83, 0.05); text-decoration: line-through; opacity: 0.6; }
         .grid-title { text-align: center; color: #b89c88; font-size: 14px; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px dashed #2d2d3a; padding-bottom: 10px; }
@@ -286,7 +285,7 @@ $saatler = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:0
             <form action="rezervasyon_islem.php" method="POST" id="rezervasyonForm">
                 <div class="form-group">
                     <label>Tarih</label>
-                    <input type="date" name="tarih" id="tarih" value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" onchange="haritaVeKutulariGuncelle()" required>
+                    <input type="date" name="tarih" id="tarih" value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d', strtotime('+10 days')); ?>" onchange="haritaVeKutulariGuncelle()" required>
                 </div>
 
                 <div style="display: flex; gap: 10px;">
@@ -436,7 +435,6 @@ $saatler = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:0
             }
         }
 
-        // 2. KUTUCUKLU SAATLERİ ÇİZME (TIKLAMA VE HOVER İPTAL EDİLDİ)
         function gorselSaatleriGetir(m_id, kodu) {
             let tarih = document.getElementById('tarih').value;
             if(!tarih) return;
@@ -475,13 +473,11 @@ $saatler = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:0
                     div.className = "time-box " + (isBusy ? "busy" : "free");
                     div.innerHTML = slotBas + " - " + slotBit;
                     
-                    // SADECE GÖRSEL OLARAK EKLENİYOR, TIKLAMA (ONCLICK) SİLİNDİ
                     grid.appendChild(div);
                 }
             });
         }
 
-        // 3. HARİTADAN MASAYA TIKLAMA OLAYI
         document.querySelector('.seating-area').addEventListener('click', function(e) {
             if (e.target.classList.contains('seat')) {
                 let masa = e.target;

@@ -14,17 +14,23 @@ $tarih = trim($_POST['tarih']);
 $baslangic = trim($_POST['baslangic']);
 $bitis = trim($_POST['bitis']);
 
-// --- 1. GEÇMİŞ SAAT KONTROLÜ ---
+// --- 1. GEÇMİŞ VE GELECEK SAAT/TARİH KONTROLÜ ---
 $simdi_tarih = date('Y-m-d');
 $simdi_saat = date('H:i:s');
+$max_tarih = date('Y-m-d', strtotime('+10 days'));
 
-if ($tarih == $simdi_tarih && $baslangic < $simdi_saat) {
-    echo "<script>alert('HATA: Geçmiş saatlere rezervasyon yapamazsınız. Lütfen güncel bir saat seçin.'); window.location.href='salonlar.php';</script>";
+if ($tarih < $simdi_tarih || ($tarih == $simdi_tarih && $baslangic < $simdi_saat)) {
+    echo "<script>alert('HATA: Geçmiş günlere veya saatlere rezervasyon yapamazsınız. Lütfen güncel bir saat seçin.'); window.location.href='salonlar.php';</script>";
     exit;
 }
 
-// --- 2. YENİ EKLENEN KONTROL: AYNI KULLANICININ ÇAKIŞAN RANDEVUSU VAR MI? ---
-// (Kişi aynı anda iki farklı yerde olamaz)
+// ADMİN FALAN DİNLEMEZ, 10 GÜN SINIRI HERKESE UYGULANIR
+if ($tarih > $max_tarih) {
+    echo "<script>alert('HATA: En fazla 10 gün sonrası için rezervasyon yapabilirsiniz.'); window.location.href='salonlar.php';</script>";
+    exit;
+}
+
+// --- 2. AYNI KULLANICININ ÇAKIŞAN RANDEVUSU VAR MI? ---
 $kullanici_kontrol_sorgu = "SELECT id FROM rezervasyonlar 
                             WHERE kullanici_id = ? AND tarih = ? AND iptal_edildi = 0 
                             AND (? < bitis_saati AND ? > baslangic_saati)";
@@ -41,8 +47,7 @@ if ($stmt_kullanici = mysqli_prepare($db, $kullanici_kontrol_sorgu)) {
     mysqli_stmt_close($stmt_kullanici);
 }
 
-// --- 3. MASA ÇAKIŞMA ENGELLEYİCİ (Önceden Yaptığımız) ---
-// (Aynı masayı aynı anda iki kişi alamaz)
+// --- 3. MASA ÇAKIŞMA ENGELLEYİCİ ---
 $kontrol_sorgu = "SELECT id FROM rezervasyonlar 
                   WHERE masa_id = ? AND tarih = ? AND iptal_edildi = 0 
                   AND (? < bitis_saati AND ? > baslangic_saati)";

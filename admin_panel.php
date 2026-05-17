@@ -3,7 +3,7 @@ session_start();
 require_once 'config.php';
 date_default_timezone_set('Europe/Istanbul');
 
-// Güvenlik: Sadece admin girebilir!
+
 if (!isset($_SESSION["kullanici_id"]) || $_SESSION["rol"] != 'admin') {
     header("location: index.php");
     exit;
@@ -17,9 +17,9 @@ $sorgu = "SELECT r.*, m.masa_kodu, m.salon_adi, k.ad_soyad, k.email
           FROM rezervasyonlar r 
           JOIN masalar m ON r.masa_id = m.id 
           JOIN kullanicilar k ON r.kullanici_id = k.id 
-          ORDER BY r.id DESC"; // En yeni en üstte
+          ORDER BY r.id DESC"; // En yeni kullanıcı en üstte görünür
 
-$sonuc = mysqli_query($db, $sorgu);
+$sonuc = mysqli_query($db, $sorgu);//veri tabanına gönderme
 
 $aktif_rez = [];
 $gecmis_rez = [];

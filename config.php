@@ -14,7 +14,7 @@ $simdi_tarih = date('Y-m-d');
 $simdi_saat = date('H:i:s');
 $on_bes_dk_once = date('H:i:s', strtotime('-15 minutes'));
 
-// 15 dk onaylanmayanları SİLME, İPTAL OLARAK İŞARETLE (ARTIK "2" OLARAK İŞARETLİYORUZ)
+// 15 dk onaylanmayanları silme
 $gecikme_sorgu = "SELECT id, masa_id FROM rezervasyonlar WHERE tarih = '$simdi_tarih' AND onaylandi = 0 AND iptal_edildi = 0 AND baslangic_saati < '$on_bes_dk_once'";
 $gecikme_sonuc = mysqli_query($db, $gecikme_sorgu);
 while ($r = mysqli_fetch_assoc($gecikme_sonuc)) {

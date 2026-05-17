@@ -3,7 +3,7 @@ session_start();
 require_once 'config.php';
 date_default_timezone_set('Europe/Istanbul');
 
-// --- AJAX 1: BELİRLİ BİR SAAT ARALIĞI SEÇİLİNCE HARİTAYI GÜNCELLEME ---
+//BELİRLİ BİR SAAT ARALIĞI SEÇİLİNCE HARİTAYI GÜNCELLEME
 if (isset($_GET['ajax_tarih'])) {
     header('Content-Type: application/json');
     $tarih = $_GET['ajax_tarih'];
@@ -30,7 +30,7 @@ if (isset($_GET['ajax_tarih'])) {
     exit;
 }
 
-// --- AJAX 2: GÜN BOYUNCA HİÇ BOŞ YERİ KALMAYAN MASALARI BULMA ---
+//GÜN BOYUNCA HİÇ BOŞ YERİ KALMAYAN MASALARI BULMA 
 if (isset($_GET['ajax_tam_dolu_tarih'])) {
     header('Content-Type: application/json');
     $tarih = $_GET['ajax_tam_dolu_tarih'];
@@ -98,7 +98,7 @@ if (isset($_GET['ajax_tam_dolu_tarih'])) {
     exit;
 }
 
-// --- AJAX 3: MASAYA TIKLAYINCA GÖRSEL SAAT KUTUCUKLARI İÇİN VERİ GETİRME ---
+//MASAYA TIKLAYINCA GÖRSEL SAAT KUTUCUKLARI İÇİN VERİ GETİRME 
 if (isset($_GET['masa_id_saat_getir'])) {
     header('Content-Type: application/json');
     $m_id = $_GET['masa_id_saat_getir'];
@@ -121,7 +121,7 @@ if (isset($_GET['masa_id_saat_getir'])) {
     echo json_encode($dolu_araliklar);
     exit;
 }
-// -------------------------------------------------------------------------
+
 
 if (!isset($_SESSION["kullanici_id"])) {
     header("location: login.php");

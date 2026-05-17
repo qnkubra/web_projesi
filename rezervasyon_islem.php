@@ -14,7 +14,7 @@ $tarih = trim($_POST['tarih']);
 $baslangic = trim($_POST['baslangic']);
 $bitis = trim($_POST['bitis']);
 
-// --- 1. GEÇMİŞ VE GELECEK SAAT/TARİH KONTROLÜ ---
+//GEÇMİŞ VE GELECEK SAAT/TARİH KONTROLÜ
 $simdi_tarih = date('Y-m-d');
 $simdi_saat = date('H:i:s');
 $max_tarih = date('Y-m-d', strtotime('+10 days'));
@@ -24,13 +24,13 @@ if ($tarih < $simdi_tarih || ($tarih == $simdi_tarih && $baslangic < $simdi_saat
     exit;
 }
 
-// ADMİN FALAN DİNLEMEZ, 10 GÜN SINIRI HERKESE UYGULANIR
+// 10 GÜN SINIRINI HERKESE UYGULAMA
 if ($tarih > $max_tarih) {
     echo "<script>alert('HATA: En fazla 10 gün sonrası için rezervasyon yapabilirsiniz.'); window.location.href='salonlar.php';</script>";
     exit;
 }
 
-// --- 2. AYNI KULLANICININ ÇAKIŞAN RANDEVUSU VAR MI? ---
+//AYNI KULLANICININ ÇAKIŞAN RANDEVUSU VAR MI KONTROLÜ
 $kullanici_kontrol_sorgu = "SELECT id FROM rezervasyonlar 
                             WHERE kullanici_id = ? AND tarih = ? AND iptal_edildi = 0 
                             AND (? < bitis_saati AND ? > baslangic_saati)";
@@ -47,7 +47,7 @@ if ($stmt_kullanici = mysqli_prepare($db, $kullanici_kontrol_sorgu)) {
     mysqli_stmt_close($stmt_kullanici);
 }
 
-// --- 3. MASA ÇAKIŞMA ENGELLEYİCİ ---
+//MASA ÇAKIŞMASINI ENGELLEME
 $kontrol_sorgu = "SELECT id FROM rezervasyonlar 
                   WHERE masa_id = ? AND tarih = ? AND iptal_edildi = 0 
                   AND (? < bitis_saati AND ? > baslangic_saati)";
@@ -64,7 +64,7 @@ if ($stmt_kontrol = mysqli_prepare($db, $kontrol_sorgu)) {
     mysqli_stmt_close($stmt_kontrol);
 }
 
-// --- 4. AŞAMA: HER ŞEY TEMİZSE REZERVASYONU KAYDET ---
+//HER ŞEY TAMAMSA REZERVASYONU KAYDET
 $rez_sorgu = "INSERT INTO rezervasyonlar (kullanici_id, masa_id, tarih, baslangic_saati, bitis_saati, onaylandi, iptal_edildi) VALUES (?, ?, ?, ?, ?, 0, 0)";
 
 if ($stmt = mysqli_prepare($db, $rez_sorgu)) {

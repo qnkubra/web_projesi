@@ -11,21 +11,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sifre = trim($_POST["sifre"]);
     $sifre_tekrar = trim($_POST["sifre_tekrar"]);
 
-    // 1. Boş alan kontrolü
+    // Boş alan kontrolü (Form Validation)
     if (empty($ad_soyad) || empty($email) || empty($sifre) || empty($sifre_tekrar)) {
         $hata_mesaji = "Lütfen tüm alanları doldurunuz.";
     } 
-    // --- YENİ EKLENEN KISIM: Şifre uzunluk kontrolü ---
+    //Şifre uzunluk kontrolü (Security Policy)
     elseif (strlen($sifre) < 6) {
         $hata_mesaji = "Şifreniz güvenliğiniz için en az 6 karakter uzunluğunda olmalıdır.";
     }
-    // ---------------------------------------------------
-    // 2. Şifre eşleşme kontrolü
+    //Şifre eşleşme kontrolü (Data Integrity)
     elseif ($sifre !== $sifre_tekrar) {
         $hata_mesaji = "Şifreler birbiriyle eşleşmiyor.";
     } 
     else {
-        // 3. E-posta adresi zaten var mı kontrolü
+        //E-posta adresi zaten var mı kontrolü (Prepared Statement)
         $kontrol_sorgu = "SELECT id FROM kullanicilar WHERE email = ?";
         if ($stmt = mysqli_prepare($db, $kontrol_sorgu)) {
             mysqli_stmt_bind_param($stmt, "s", $email);
@@ -35,10 +34,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (mysqli_stmt_num_rows($stmt) > 0) {
                 $hata_mesaji = "Bu e-posta adresi zaten sisteme kayıtlı.";
             } else {
-                // 4. Yeni kullanıcıyı veritabanına ekleme
+                
+                //şifre kriptolama
+                $kriptolu_sifre = password_hash($sifre, PASSWORD_DEFAULT);
+                
+                //Yeni kullanıcıyı veritabanına ekleme
                 $ekle_sorgu = "INSERT INTO kullanicilar (ad_soyad, email, sifre, rol) VALUES (?, ?, ?, 'ogrenci')";
                 if ($ekle_stmt = mysqli_prepare($db, $ekle_sorgu)) {
-                    mysqli_stmt_bind_param($ekle_stmt, "sss", $ad_soyad, $email, $sifre);
+                   
+                    mysqli_stmt_bind_param($ekle_stmt, "sss", $ad_soyad, $email, $kriptolu_sifre);
                     
                     if (mysqli_stmt_execute($ekle_stmt)) {
                         $basari_mesaji = "Kayıt işlemi başarılı! Giriş sayfasına yönlendiriliyorsunuz...";
@@ -63,6 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LibReserve - Kayıt Ol</title>
+     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='15' y='20' width='12' height='60' fill='%23b89c88' rx='2'/><rect x='35' y='20' width='12' height='60' fill='%23b89c88' rx='2'/><rect x='55' y='20' width='12' height='60' fill='%23b89c88' rx='2'/><polygon points='75,20 87,20 97,80 85,80' fill='%23b89c88'/></svg>">
     <style>
         body { 
             color: #ffffff; 
@@ -75,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             overflow: hidden; 
         }
 
-        /* --- ARKA PLAN ANİMASYON CSS KODLARI --- */
+       
         .bg-slider { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
         .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; animation: fadeAnim 15s infinite; }
         .slide:nth-child(1) { animation-delay: 0s; }
@@ -88,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         .bg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 13, 18, 0.8); z-index: -1; }
 
-        /* --- KAYIT KUTUSU --- */
+        
         .login-box { 
             background-color: rgba(26, 26, 36, 0.85); 
             padding: 40px; 
@@ -97,11 +102,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             max-width: 400px; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.8); 
             z-index: 1; 
-            /* Form biraz daha uzun olacağı için kaydırma çubuğu çıkmasını engelliyoruz */
             max-height: 90vh;
             overflow-y: auto;
         }
-        /* Kaydırma çubuğunu gizlemek için */
+        
         .login-box::-webkit-scrollbar { display: none; }
         .login-box { -ms-overflow-style: none; scrollbar-width: none; }
 

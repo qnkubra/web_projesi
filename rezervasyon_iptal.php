@@ -9,7 +9,7 @@ if (!isset($_SESSION["kullanici_id"]) || !isset($_GET['id'])) {
 
 $rez_id = intval($_GET['id']);
 
-// İptal edenin rolüne göre iptal kodu belirliyoruz (Admin ise 3, Öğrenci ise 1)
+
 $rol = isset($_SESSION["rol"]) ? $_SESSION["rol"] : 'ogrenci';
 $iptal_kodu = ($rol == 'admin') ? 3 : 1;
 
@@ -19,10 +19,10 @@ $sonuc = mysqli_query($db, $sorgu);
 if ($row = mysqli_fetch_assoc($sonuc)) {
     $masa_id = $row['masa_id'];
     
-    // Masayı boşa çıkar
+    
     mysqli_query($db, "UPDATE masalar SET durum = 'bos' WHERE id = $masa_id");
     
-    // Rezervasyonu iptal koduyla işaretle (1: Öğrenci, 2: Sistem, 3: Admin)
+    // Rezervasyonu iptal koduyla işaretleme (1: Öğrenci, 2: Sistem, 3: Admin)
     mysqli_query($db, "UPDATE rezervasyonlar SET iptal_edildi = $iptal_kodu WHERE id = $rez_id");
 }
 

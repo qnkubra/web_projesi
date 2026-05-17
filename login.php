@@ -17,7 +17,7 @@ if(isset($_GET['kayit']) && $_GET['kayit'] == 'basarili'){
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"]);
     $sifre = $_POST["sifre"];
-
+//güvenli sorgu
     $sorgu = "SELECT id, ad_soyad, sifre, rol FROM kullanicilar WHERE email = ?";
     if ($stmt = mysqli_prepare($db, $sorgu)) {
         mysqli_stmt_bind_param($stmt, "s", $email);
@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sonuc = mysqli_stmt_get_result($stmt);
 
         if ($kullanici = mysqli_fetch_assoc($sonuc)) {
-            if (password_verify($sifre, $kullanici['sifre'])) { 
+            if (password_verify($sifre, $kullanici['sifre'])) { //şifre doğrulama
                 $_SESSION["kullanici_id"] = $kullanici['id'];
                 $_SESSION["ad_soyad"] = $kullanici['ad_soyad'];
                 $_SESSION["rol"] = $kullanici['rol'];
@@ -81,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="input-group"><label>Şifre</label><input type="password" name="sifre" required></div>
             <button type="submit" class="btn-submit">GİRİŞ YAP</button>
         </form>
-        <div class="register-link">Kayıtlı değil misin? <a href="kayit.php">Kayıt Ol</a></div>
+        <div class="register-link">Kayıtlı değil misin? <a href="register.php">Kayıt Ol</a></div>
     </div>
 </body>
 </html>

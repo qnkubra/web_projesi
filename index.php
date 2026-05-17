@@ -8,14 +8,14 @@ if (!isset($_SESSION["kullanici_id"])) {
     exit;
 }
 
-// Çıkış işlemi
+
 if (isset($_GET['cikis'])) {
     session_destroy();
     header("location: login.php");
     exit;
 }
 
-// Dinamik İstatistik: Toplam Rezervasyon Sayısı
+//Toplam rezervasyon sayısı
 $toplam_rez = 0;
 $sorgu = mysqli_query($db, "SELECT COUNT(id) as toplam FROM rezervasyonlar WHERE iptal_edildi = 0");
 if($row = mysqli_fetch_assoc($sorgu)) {

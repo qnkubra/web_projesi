@@ -1,9 +1,10 @@
-<?php
+<?php//öğrenci siteyi kullanırken çalışmıyor. masa yukleme sıfırlama
 require_once 'config.php';
 
-// Önceki denemelerden kalan masaları tamamen temizle
+// Önceki denemelerden kalan masaları tamamen temizler
 mysqli_query($db, "TRUNCATE TABLE masalar");
-
+//truncate : fabrika ayarlarına döndürme.
+//ınsert ınto: kayıt etme, veritabanına satır ekleme
 $eklenen_masa = 0;
 
 // 1. Ana Salon (80 Masa)
